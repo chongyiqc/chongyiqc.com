@@ -7,7 +7,25 @@
   'use strict';
 
   /* ------------------------------------------------------------------
-     0. SITE FACTS — single source of truth for the whole site
+     0. DEPLOYMENT BASE PATH
+     Captured from this script's own URL. Root-absolute links such as
+     "/services.html" break when the site is served from a sub-path
+     (GitHub Pages at /chongyiqc.com/), so every such link is rebased at
+     runtime. At the domain root BASE_PATH is "/" and nothing changes.
+     ------------------------------------------------------------------ */
+  var BASE_PATH = (function () {
+    try {
+      var src = document.currentScript && document.currentScript.src;
+      if (!src) return '/';
+      var path = new URL(src, window.location.href).pathname.replace(/\/js\/main\.js$/, '');
+      return path === '' ? '/' : path;
+    } catch (e) {
+      return '/';
+    }
+  })();
+
+  /* ------------------------------------------------------------------
+     0.1 SITE FACTS — single source of truth for the whole site
      ------------------------------------------------------------------ */
   var SITE = {
     name: 'Chongyi Automobile Co., Limited',
@@ -657,18 +675,25 @@
   }
 
   /* ------------------------------------------------------------------
-     12. LOCAL PREVIEW PATHS
+     12. DEPLOYMENT PATHS
      Under file:// a root-relative link such as "/" resolves to the disk
-     root, not to the homepage. Rewrite anchors to sibling-relative paths
-     so a double-clicked local preview navigates correctly. Under http(s)
-     nothing is touched, so the public URLs stay canonical.
+     root, not to the homepage; under a sub-path deployment it resolves
+     outside the site. Rewrite anchors to the right base in both cases.
+     Under http(s) at the domain root nothing is touched, so the public
+     URLs stay canonical.
      ------------------------------------------------------------------ */
-  function applyLocalPreviewPaths() {
-    if (window.location.protocol !== 'file:') return;
+  function applyBasePaths() {
+    var isFile = window.location.protocol === 'file:';
+
     $$('a[href^="/"]').forEach(function (link) {
       var href = link.getAttribute('href');
       var next = href.replace(/^\//, '');
-      link.setAttribute('href', next === '' ? 'index.html' : next);
+
+      if (isFile) {
+        link.setAttribute('href', next === '' ? 'index.html' : next);
+      } else if (BASE_PATH !== '/') {
+        link.setAttribute('href', BASE_PATH + '/' + next);
+      }
     });
   }
 
@@ -679,7 +704,7 @@
     document.documentElement.classList.add('reveal-ready');
     buildHeader();
     buildFooter();
-    applyLocalPreviewPaths();
+    applyBasePaths();
     applySEO();
     injectJSONLD();
     initHeaderBehaviour();
