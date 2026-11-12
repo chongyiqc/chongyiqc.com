@@ -1,0 +1,18 @@
+# Normalise text to LF in the repository and in every checkout.
+# Keeps .htaccess safe on Linux hosts — CRLF in .htaccess can trigger a 500.
+* text=auto eol=lf
+
+*.html    text eol=lf
+*.css     text eol=lf
+*.js      text eol=lf
+*.svg     text eol=lf
+*.xml     text eol=lf
+*.txt     text eol=lf
+.htaccess text eol=lf
+
+# Binary assets — never touched by line-ending conversion.
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.webp    binary
+*.ico     binary

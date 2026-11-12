@@ -1,0 +1,86 @@
+# =============================================================
+# Chongyi Automobile Co., Limited — Apache configuration
+# Domain: https://chongyiqc.com
+# =============================================================
+
+# -------------------------------------------------------------
+# 1. Force HTTPS
+# -------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# -------------------------------------------------------------
+# 2. Canonical URLs — strip /index.html (301 to clean path)
+# -------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # /index.html -> /
+  RewriteCond %{THE_REQUEST} \s/+(index\.html)[\s?] [NC]
+  RewriteRule ^ / [R=301,L]
+
+  # /services/index.html -> /services/
+  RewriteCond %{THE_REQUEST} \s/+(.+?)/index\.html[\s?] [NC]
+  RewriteRule ^ /%1/ [R=301,L]
+</IfModule>
+
+# -------------------------------------------------------------
+# 3. Directory index
+# -------------------------------------------------------------
+DirectoryIndex index.html
+
+# -------------------------------------------------------------
+# 4. Custom 404
+# -------------------------------------------------------------
+ErrorDocument 404 /404.html
+
+# -------------------------------------------------------------
+# 5. Compression — gzip for text assets
+# -------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+  AddOutputFilterByType DEFLATE application/json application/xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# -------------------------------------------------------------
+# 6. Cache headers — css / js / images
+# -------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                "access plus 1 year"
+  ExpiresByType application/javascript  "access plus 1 year"
+  ExpiresByType image/png               "access plus 1 year"
+  ExpiresByType image/jpeg              "access plus 1 year"
+  ExpiresByType image/webp              "access plus 1 year"
+  ExpiresByType image/svg+xml           "access plus 1 year"
+  ExpiresByType font/woff2              "access plus 1 year"
+  ExpiresByType text/html               "access plus 1 hour"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|png|jpg|jpeg|webp|svg|ico|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=3600, must-revalidate"
+  </FilesMatch>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# -------------------------------------------------------------
+# 7. MIME types for SVG sprite and plain-text assets
+# -------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType image/svg+xml .svg
+  AddType application/xml .xml
+  AddType text/plain .txt
+</IfModule>

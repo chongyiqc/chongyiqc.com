@@ -1,0 +1,4 @@
+# Local build inputs — these are the generation briefs (SPEC + replacement
+# table), not site code. They are intentionally not published to the repo.
+SPEC.txt
+tihuan.txt
